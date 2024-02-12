@@ -3,6 +3,7 @@ import { NodePanel } from '@/components/node-panel'
 import { TheFlow } from '@/components/the-flow'
 import { TheSidebar } from '@/components/the-sidebar'
 import { useFlows } from '@/lib/hooks/use-flows'
+import { useKeyPress } from '@/lib/hooks/use-key-press'
 import { NodeSchema } from '@/lib/schema'
 import { Flow } from '@/lib/types'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
@@ -29,6 +30,16 @@ function EditFlow() {
 
   const [flows, setFlows] = useFlows()
   const flow = useMemo(() => flows?.find((flow) => flow.id === params.id), [params, flows])
+
+  /**
+   * on escape pressed it will come back to main-panel from node-edit-panel
+   * this is necessary for accessibility and better ux
+   */
+  useKeyPress('Escape', () => {
+    if (search.nodeId) {
+      navigate({ to: Route.fullPath, params: { id: params.id }, replace: true })
+    }
+  })
 
   const saveFlowHandler = (data: Pick<Flow, 'edges' | 'nodes'>) => {
     /**

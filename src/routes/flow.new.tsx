@@ -10,6 +10,7 @@ import { ComponentRef, useRef } from 'react'
 import { useFlows } from '@/lib/hooks/use-flows'
 import { nanoid } from 'nanoid'
 import { Flow } from '@/lib/types'
+import { useKeyPress } from '@/lib/hooks/use-key-press'
 
 export const Route = createFileRoute('/flow/new')({
   component: NewFlow,
@@ -27,6 +28,16 @@ function NewFlow() {
   const search = useSearch({ from: Route.fullPath })
   const ref = useRef<ComponentRef<typeof NodeEditForm> | null>(null)
   const [, setFlows] = useFlows()
+
+  /**
+   * on escape pressed it will come back to main-panel from node-edit-panel
+   * this is necessary for accessibility and better ux
+   */
+  useKeyPress('Escape', () => {
+    if (search.nodeId) {
+      navigate({ to: Route.fullPath, replace: true })
+    }
+  })
 
   const saveFlowHandler = (flow: Pick<Flow, 'edges' | 'nodes'>) => {
     /**

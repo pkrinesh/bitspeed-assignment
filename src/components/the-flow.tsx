@@ -63,7 +63,7 @@ export function TheFlow({
       type?: 'add' | 'delete'
     }) => {
       /**
-       * Here I am using Set() instead of to prevent duplication
+       * Here I am using Set() instead of `Array` to prevent duplication
        * To calculate empty node which has zero connecting nodes
        * we are adding `to` and `from` to the node data
        * so it will be easy to calculate latter
