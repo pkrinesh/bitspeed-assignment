@@ -11,16 +11,15 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as FlowsImport } from './routes/flows'
+import { Route as FlowImport } from './routes/flow'
 import { Route as IndexImport } from './routes/index'
-import { Route as FlowsNewImport } from './routes/flows.new'
-import { Route as FlowsIdImport } from './routes/flows.$id'
-import { Route as FlowsIdEditImport } from './routes/flows.$id.edit'
+import { Route as FlowNewImport } from './routes/flow.new'
+import { Route as FlowIdEditImport } from './routes/flow.$id.edit'
 
 // Create/Update Routes
 
-const FlowsRoute = FlowsImport.update({
-  path: '/flows',
+const FlowRoute = FlowImport.update({
+  path: '/flow',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -29,19 +28,14 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const FlowsNewRoute = FlowsNewImport.update({
+const FlowNewRoute = FlowNewImport.update({
   path: '/new',
-  getParentRoute: () => FlowsRoute,
+  getParentRoute: () => FlowRoute,
 } as any)
 
-const FlowsIdRoute = FlowsIdImport.update({
-  path: '/$id',
-  getParentRoute: () => FlowsRoute,
-} as any)
-
-const FlowsIdEditRoute = FlowsIdEditImport.update({
-  path: '/edit',
-  getParentRoute: () => FlowsIdRoute,
+const FlowIdEditRoute = FlowIdEditImport.update({
+  path: '/$id/edit',
+  getParentRoute: () => FlowRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -52,21 +46,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/flows': {
-      preLoaderRoute: typeof FlowsImport
+    '/flow': {
+      preLoaderRoute: typeof FlowImport
       parentRoute: typeof rootRoute
     }
-    '/flows/$id': {
-      preLoaderRoute: typeof FlowsIdImport
-      parentRoute: typeof FlowsImport
+    '/flow/new': {
+      preLoaderRoute: typeof FlowNewImport
+      parentRoute: typeof FlowImport
     }
-    '/flows/new': {
-      preLoaderRoute: typeof FlowsNewImport
-      parentRoute: typeof FlowsImport
-    }
-    '/flows/$id/edit': {
-      preLoaderRoute: typeof FlowsIdEditImport
-      parentRoute: typeof FlowsIdImport
+    '/flow/$id/edit': {
+      preLoaderRoute: typeof FlowIdEditImport
+      parentRoute: typeof FlowImport
     }
   }
 }
@@ -75,10 +65,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
-  FlowsRoute.addChildren([
-    FlowsIdRoute.addChildren([FlowsIdEditRoute]),
-    FlowsNewRoute,
-  ]),
+  FlowRoute.addChildren([FlowNewRoute, FlowIdEditRoute]),
 ])
 
 /* prettier-ignore-end */
