@@ -4,10 +4,9 @@ import { TheFlow } from '@/components/the-flow'
 import { TheSidebar } from '@/components/the-sidebar'
 import { useFlows } from '@/lib/hooks/use-flows'
 import { useKeyPress } from '@/lib/hooks/use-key-press'
-import { NodeSchema } from '@/lib/schema'
 import { Flow } from '@/lib/types'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { ComponentRef, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import 'reactflow/dist/style.css'
 import { z } from 'zod'
 
@@ -16,17 +15,17 @@ export const Route = createFileRoute('/flow/$id/edit')({
   validateSearch: (search) =>
     z
       .object({
+        name: z.string(),
         nodeId: z.string().optional(),
-        nodes: z.array(NodeSchema).optional(),
+        nodeValue: z.string().optional(),
       })
       .parse(search),
 })
 
 function EditFlow() {
-  const navigate = useNavigate()
+  const navigate = useNavigate({ from: Route.fullPath })
   const params = Route.useParams()
   const search = Route.useSearch()
-  const ref = useRef<ComponentRef<typeof NodeEditForm> | null>(null)
 
   const [flows, setFlows] = useFlows()
   const flow = useMemo(() => flows?.find((flow) => flow.id === params.id), [params, flows])
@@ -37,7 +36,7 @@ function EditFlow() {
    */
   useKeyPress('Escape', () => {
     if (search.nodeId) {
-      navigate({ to: Route.fullPath, params: { id: params.id }, replace: true })
+      navigate({ search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }), replace: true })
     }
   })
 
@@ -60,8 +59,6 @@ function EditFlow() {
         }) ?? []),
       ]
     })
-
-    navigate({ to: '/', replace: true })
   }
 
   return (
@@ -69,24 +66,25 @@ function EditFlow() {
       flow={flow}
       onClick={() => {
         if (search.nodeId) {
-          navigate({ to: Route.fullPath, params: { id: params.id }, replace: true })
+          navigate({
+            search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }),
+            replace: true,
+          })
         }
-      }}
-      onNodeClick={(node) => {
-        ref?.current?.focus()
-        navigate({ to: Route.fullPath, params: { id: params.id }, search: { nodeId: node?.id } })
       }}
     >
       {({ nodes, edges, setNodes }) => (
         <TheSidebar>
           {search.nodeId ? (
             <NodeEditForm
-              ref={ref}
               nodes={nodes}
               onSetNodes={setNodes}
               nodeId={search.nodeId}
               onSaveHandler={() =>
-                navigate({ to: Route.fullPath, params: { id: params.id }, replace: true })
+                navigate({
+                  search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }),
+                  replace: true,
+                })
               }
             />
           ) : (

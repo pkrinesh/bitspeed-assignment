@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
-import { useCallback, useRef, useState } from 'react'
+import { memo, useCallback, useRef, useState } from 'react'
 import ReactFlow, {
+  Background,
   Connection,
   Controls,
   Edge,
@@ -13,20 +14,14 @@ import ReactFlow, {
   useNodesState,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
+import colors from 'tailwindcss/colors'
 
 import type { Flow, FlowNode, NodeData } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { ClassValue } from 'clsx'
 import 'reactflow/dist/style.css'
-
-const initialNodes: FlowNode[] = [
-  {
-    id: nanoid(),
-    type: 'default',
-    data: { label: 'input node', to: new Set(), from: new Set() },
-    position: { x: 250, y: 5 },
-  },
-]
+import { toast } from 'sonner'
+import { TextNode } from './text-node'
 
 type ChildrenProps = {
   nodes: FlowNode[]
@@ -34,19 +29,34 @@ type ChildrenProps = {
   edges: Edge[]
 }
 
-export function TheFlow({
+const nodeTypes = {
+  textMessage: TextNode,
+}
+
+export const TheFlow = memo(function TheFlow({
   flow,
   children,
   className,
-  onNodeClick,
   onClick,
 }: {
   flow?: Flow
   children?: (props: ChildrenProps) => React.ReactNode
   className?: ClassValue[]
-  onNodeClick?: (node?: FlowNode) => void
-  onClick?: () => void
+  onClick: () => void
 }) {
+  const initialNodes = [
+    {
+      id: nanoid(),
+      type: 'textMessage',
+      data: {
+        label: 'New text message',
+        to: new Set<string>(),
+        from: new Set<string>(),
+      },
+      position: { x: 250, y: 250 },
+    },
+  ]
+
   const [nodes, setNodes, onNodesChange] = useNodesState<NodeData>(flow?.nodes ?? initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.edges ?? [])
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
@@ -111,9 +121,12 @@ export function TheFlow({
         id: nanoid(),
         type,
         position,
-        data: { label: `${type} node`, to: new Set(), from: new Set() },
+        data: {
+          label: 'New text Message',
+          to: new Set(),
+          from: new Set(),
+        },
       }
-
       setNodes((nds) => nds.concat(newNode))
     },
     [reactFlowInstance, setNodes]
@@ -130,10 +143,15 @@ export function TheFlow({
       setEdges((eds) => {
         // checking if edge is already originated, yes then return
         const exists = eds.filter((ed) => ed.source === source).length > 0
-        if (exists) return eds
+        if (exists) {
+          toast.error("Can't connect node", {
+            description: 'Node can have only one source edge',
+            position: 'top-center',
+          })
+          return eds
+        }
 
         setToAndFromForNode({ source, target })
-
         return addEdge(edge, eds)
       })
     },
@@ -174,19 +192,15 @@ export function TheFlow({
   )
 
   /**
-   * Here are we are setting `nodeId` as search params
-   * So we can get that from the url when needed
-   * why I am using `urlSearchParam` as state
-   * I've listed out the reasons in readme
+   * we are stopPropagating event from node to canvas
    */
-  const editNodeHandler: NodeMouseHandler = (e, node: FlowNode) => {
+  const editNodeHandler: NodeMouseHandler = (e) => {
     e.stopPropagation()
-    onNodeClick && onNodeClick(node)
   }
 
   return (
-    <div className={cn('flex h-full flex-1 flex-col md:flex-row', className)}>
-      <div className="flex h-full flex-1">
+    <div className={cn('flex h-full overflow-hidden flex-1 flex-col md:flex-row', className)}>
+      <div className="flex h-full flex-1 overflow-hidden">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -202,12 +216,13 @@ export function TheFlow({
           onInit={setReactFlowInstance}
           onDrop={dropHandler}
           onDragOver={dragOverHandler}
-          fitView
+          nodeTypes={nodeTypes}
         >
           <Controls />
+          <Background color={colors.gray[500]} />
         </ReactFlow>
       </div>
       {children && children({ nodes, setNodes, edges })}
     </div>
   )
-}
+})

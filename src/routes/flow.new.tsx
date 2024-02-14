@@ -1,32 +1,30 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { z } from 'zod'
 
-import { TheFlow } from '@/components/the-flow'
-import { TheSidebar } from '@/components/the-sidebar'
-import { NodeSchema } from '@/lib/schema'
 import { NodeEditForm } from '@/components/node-edit-form'
 import { NodePanel } from '@/components/node-panel'
-import { ComponentRef, useRef } from 'react'
+import { TheFlow } from '@/components/the-flow'
+import { TheSidebar } from '@/components/the-sidebar'
 import { useFlows } from '@/lib/hooks/use-flows'
-import { nanoid } from 'nanoid'
-import { Flow } from '@/lib/types'
 import { useKeyPress } from '@/lib/hooks/use-key-press'
+import { Flow } from '@/lib/types'
+import { nanoid } from 'nanoid'
 
 export const Route = createFileRoute('/flow/new')({
   component: NewFlow,
   validateSearch: (search) =>
     z
       .object({
+        name: z.string(),
         nodeId: z.string().optional(),
-        nodes: z.array(NodeSchema).optional(),
+        nodeValue: z.string().optional(),
       })
       .parse(search),
 })
 
 function NewFlow() {
-  const navigate = useNavigate()
+  const navigate = useNavigate({ from: Route.fullPath })
   const search = useSearch({ from: Route.fullPath })
-  const ref = useRef<ComponentRef<typeof NodeEditForm> | null>(null)
   const [, setFlows] = useFlows()
 
   /**
@@ -35,28 +33,37 @@ function NewFlow() {
    */
   useKeyPress('Escape', () => {
     if (search.nodeId) {
-      navigate({ to: Route.fullPath, replace: true })
+      navigate({ search: ({ nodeId, ...rest }) => ({ ...rest }), replace: true })
     }
   })
 
   const saveFlowHandler = (flow: Pick<Flow, 'edges' | 'nodes'>) => {
+    console.log(flow)
     /**
      * storing data to the local storage as of now, can be stored anywhere
      * just have to modified the code from the `useFlow` hooks
      */
+    const newFlow = {
+      id: nanoid(),
+      name: search.name ?? 'New Flow',
+      nodes: flow.nodes,
+      edges: flow?.edges,
+    }
+
     setFlows((prev) => {
-      return [
-        ...(prev ?? []),
-        {
-          id: nanoid(),
-          name: 'Name',
-          nodes: flow?.nodes,
-          edges: flow?.edges,
-        },
-      ]
+      return [...(prev ?? []), newFlow]
     })
 
-    navigate({ to: '/', replace: true })
+    /**
+     * Not navigating back to the home page when user save the flow
+     * instead navigating to the edit page so they can keep working
+     * this is good practice coz letter we can implement autosave
+     */
+    navigate({
+      to: '/flow/$id/edit',
+      search: { name: newFlow.name },
+      params: { id: newFlow.id },
+    })
   }
 
   /**
@@ -73,32 +80,31 @@ function NewFlow() {
    * 2. State will be close to the component so it will be easier to maintain
    */
   return (
-    <TheFlow
-      onClick={() => {
-        if (search.nodeId) {
-          navigate({ to: Route.fullPath, replace: true })
-        }
-      }}
-      onNodeClick={(node) => {
-        ref?.current?.focus()
-        navigate({ to: Route.fullPath, search: { nodeId: node?.id } })
-      }}
-    >
-      {({ nodes, edges, setNodes }) => (
-        <TheSidebar>
-          {search.nodeId ? (
-            <NodeEditForm
-              ref={ref}
-              nodes={nodes}
-              onSetNodes={setNodes}
-              nodeId={search.nodeId}
-              onSaveHandler={() => navigate({ to: Route.fullPath, replace: true })}
-            />
-          ) : (
-            <NodePanel nodes={nodes} edges={edges} onSaveHandler={saveFlowHandler} />
-          )}
-        </TheSidebar>
-      )}
-    </TheFlow>
+    <>
+      <TheFlow
+        onClick={() => {
+          if (search.nodeId) {
+            navigate({ search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }), replace: true })
+          }
+        }}
+      >
+        {({ nodes, edges, setNodes }) => (
+          <TheSidebar>
+            {search.nodeId ? (
+              <NodeEditForm
+                nodes={nodes}
+                onSetNodes={setNodes}
+                nodeId={search.nodeId}
+                onSaveHandler={() =>
+                  navigate({ search: ({ nodeId, ...rest }) => ({ ...rest }), replace: true })
+                }
+              />
+            ) : (
+              <NodePanel nodes={nodes} edges={edges} onSaveHandler={saveFlowHandler} />
+            )}
+          </TheSidebar>
+        )}
+      </TheFlow>
+    </>
   )
 }

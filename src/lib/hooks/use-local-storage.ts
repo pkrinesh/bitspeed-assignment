@@ -1,4 +1,5 @@
 import React from 'react'
+import superjson from 'superjson'
 
 type Set<T> = (value: T | ((value: T | undefined) => void)) => void
 
@@ -10,7 +11,7 @@ export function useLocalStorage<T = unknown>(key: string, initialValue: T) {
   const setState = React.useCallback<Set<T>>(
     (v) => {
       try {
-        const nextState = v instanceof Function ? v(parse<T>(store)) : v
+        const nextState = v instanceof Function ? v(superjson.parse<T>(store ?? '')) : v
 
         if (nextState === undefined || nextState === null) {
           removeLocalStorageItem(key)
@@ -30,7 +31,7 @@ export function useLocalStorage<T = unknown>(key: string, initialValue: T) {
     }
   }, [key, initialValue])
 
-  return [store ? parse<T>(store) : initialValue, setState] as const
+  return [store ? superjson.parse<T>(store) : initialValue, setState] as const
 }
 
 // 👇 this will sync the tabs on a page
@@ -44,7 +45,7 @@ function useLocalStorageSubscribe(callback: () => void) {
 }
 
 function setLocalStorageItem<T>(key: string, value: T) {
-  const stringifiedValue = JSON.stringify(value)
+  const stringifiedValue = superjson.stringify(value)
   window.localStorage.setItem(key, stringifiedValue)
   dispatchStorageEvent(key, stringifiedValue)
 }
@@ -56,12 +57,4 @@ function removeLocalStorageItem(key: string) {
 
 function getLocalStorageItem(key: string) {
   return window.localStorage.getItem(key)
-}
-
-function parse<T>(value: string | null) {
-  if (value) {
-    return JSON.parse(value) as T
-  }
-
-  return undefined
 }
