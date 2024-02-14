@@ -14,6 +14,19 @@ export const TextNode = memo(function TextNode({
   const route = useRouterState()
   const navigate = useNavigate()
 
+  const mouseDownHandler = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    /**
+     * setting `nodeId` and `nodeValue` as query-param
+     */
+    navigate({
+      to: route.location.pathname,
+      search: (prev) => ({ ...prev, nodeId, nodeValue: data.label }),
+    })
+  }
+
   return (
     <>
       <Handle
@@ -24,17 +37,7 @@ export const TextNode = memo(function TextNode({
       />
       <div className={clsx('w-60', selected && 'ring-1 ring-ring')}>
         <RootNode>
-          <p
-            className="nodrag cursor-text"
-            onMouseDown={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              navigate({
-                to: route.location.pathname,
-                search: (prev) => ({ ...prev, nodeId, nodeValue: data.label }),
-              })
-            }}
-          >
+          <p className="nodrag cursor-text" onMouseDown={mouseDownHandler}>
             {data.label}
           </p>
         </RootNode>

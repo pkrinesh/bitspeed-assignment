@@ -71,6 +71,21 @@ export function NodePanel({
     onSaveHandler && onSaveHandler({ nodes, edges, justSaving })
   }
 
+  const saveAndContinueHandler = () => {
+    flushSync(() => {
+      onSaved(true)
+      saveHandler(false)
+    })
+    navigate({ to: '/', replace: true })
+  }
+
+  const continueHandler = () => {
+    flushSync(() => {
+      onSaved(true)
+    })
+    navigate({ to: '/', replace: true })
+  }
+
   return (
     <div className="h-full">
       <div className="flex flex-col gap-4 h-full overflow-hidden">
@@ -82,6 +97,7 @@ export function NodePanel({
             className="w-full"
             variant="outline"
             onClick={() => {
+              // preventing going to home page when has unsaved data
               if (!saved) return onToggleOpen()
               navigate({ to: '/', replace: true })
             }}
@@ -111,25 +127,8 @@ export function NodePanel({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => {
-                flushSync(() => {
-                  onSaved(true)
-                })
-                navigate({ to: '/', replace: true })
-              }}
-            >
-              Continue
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                flushSync(() => {
-                  onSaved(true)
-                  saveHandler(false)
-                })
-                navigate({ to: '/', replace: true })
-              }}
-            >
+            <AlertDialogCancel onClick={continueHandler}>Continue</AlertDialogCancel>
+            <AlertDialogAction onClick={saveAndContinueHandler}>
               Save and Continue
             </AlertDialogAction>
           </AlertDialogFooter>

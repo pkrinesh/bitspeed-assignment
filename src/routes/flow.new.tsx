@@ -32,7 +32,7 @@ function NewFlow() {
   const [open, toggleOpen] = useReducer((prev) => !prev, false)
 
   /**
-   * on escape pressed it will come back to main-panel from node-edit-panel
+   * on `escape` pressed, it will come back to main-panel from node-edit-panel
    * this is necessary for accessibility and better ux
    */
   useKeyPress('Escape', () => {

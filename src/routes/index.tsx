@@ -47,8 +47,8 @@ function Index() {
   }
 
   return (
-    <div className="flex flex-1 w-full">
-      <div className="px-24 w-full mt-6">
+    <div className="flex flex-col flex-1 w-full">
+      <div className="px-24 h-full w-full mt-6">
         <div className="space-y-4">
           <div className="border-b border-border py-4">
             <Form {...form}>
@@ -107,6 +107,20 @@ function Index() {
             )}
           </ul>
         </div>
+      </div>
+      <div className="w-full bg-muted border-t border-t-border shadow flex justify-center items-center py-2">
+        <p>
+          Design and developed by{' '}
+          <span>
+            <a
+              href="https://github.com/pkrinesh"
+              target="_blank"
+              className="text-primary underline"
+            >
+              Krinesh
+            </a>
+          </span>
+        </p>
       </div>
     </div>
   )

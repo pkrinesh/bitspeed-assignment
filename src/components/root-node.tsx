@@ -2,6 +2,9 @@ import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { ReactNode, memo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 
+/**
+ * By utilizing this we can create many different node
+ */
 export const RootNode = memo(function RootNode({ children }: { children: ReactNode }) {
   return (
     <Card className="rounded-lg overflow-hidden">

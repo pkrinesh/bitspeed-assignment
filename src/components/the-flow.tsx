@@ -43,8 +43,8 @@ export const TheFlow = memo(function TheFlow({
   flow?: Flow
   children?: (props: ChildrenProps) => React.ReactNode
   className?: ClassValue[]
-  onClick: () => void
-  onNodeOrEdgeChange: () => void
+  onClick: () => void // when clicked on canvas hide the node edit form from side panel
+  onNodeOrEdgeChange: () => void // maintaining the `saved` state for navigation blocking
 }) {
   const initialNodes = [
     {
@@ -76,7 +76,8 @@ export const TheFlow = memo(function TheFlow({
     }) => {
       /**
        * Here I am using Set() instead of `Array` to prevent duplication
-       * To calculate empty node which has zero connecting nodes
+       *
+       * To calculate empty node (which has zero connecting nodes)
        * we are adding `to` and `from` to the node data
        * so it will be easy to calculate latter
        * to: target and from: source
@@ -103,6 +104,9 @@ export const TheFlow = memo(function TheFlow({
     event.dataTransfer.dropEffect = 'move'
   }, [])
 
+  /**
+   * When node is drop on the the flow canvas
+   */
   const dropHandler = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault()
@@ -136,8 +140,8 @@ export const TheFlow = memo(function TheFlow({
   )
 
   /**
-   * for every edge related handlers we have add or delete the
-   * `to` or `from` from the node based on the even
+   * for every edge related handlers we have to add or delete
+   * `to` or `from` from the node based on the event
    */
   const edgeConnectHandler = useCallback<OnConnect>(
     (edge: Connection) => {

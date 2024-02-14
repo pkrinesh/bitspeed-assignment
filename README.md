@@ -1,15 +1,16 @@
-## Why I am using `urlSearchParam` for state
+## Bit Speed Assignment
 
-- We don't have to pass state as props or no need to use global state. All the children are only have that from url
-- On refresh we can preserve the state without storing to the local storage
-- Can be shared to any one have the same flow
+Deployed to the vercel at [bitspeed-assignment-krinesh](https://bitspeed-assignment.vercel.app/)
 
-- When you click on node it will open edit panel but you see that input is focused which is achieve by `useImperativeHandle`.
+This is assignment post by Bit Speed on LinkedIn. [Assignment](https://bitespeed.notion.site/BiteSpeed-Frontend-Task-Chatbot-flow-builder-fb0feb3498294929a9b7171bcb4e8a8b)
 
-# Steps
+This website is built using
 
-[ ] - Basic set up react with vite
-[ ] - add tailwind and tanstack router
-[ ] - shadcn
-[ ] - reactflow
-[ ] - zod
+- [React](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [React Flow](https://reactflow.dev/)
+- [Tanstack Router](https://tanstack.com/router/latest)
+- [Shadcn/ui](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Sonner](https://sonner.emilkowal.ski/)
+- [Vercel](https://vercel.com/)
