@@ -5,8 +5,8 @@ import { TheSidebar } from '@/components/the-sidebar'
 import { useFlows } from '@/lib/hooks/use-flows'
 import { useKeyPress } from '@/lib/hooks/use-key-press'
 import { Flow } from '@/lib/types'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { createFileRoute, useBlocker, useNavigate } from '@tanstack/react-router'
+import { useMemo, useReducer, useState } from 'react'
 import 'reactflow/dist/style.css'
 import { z } from 'zod'
 
@@ -30,6 +30,11 @@ function EditFlow() {
   const [flows, setFlows] = useFlows()
   const flow = useMemo(() => flows?.find((flow) => flow.id === params.id), [params, flows])
 
+  const [saved, setSaved] = useState(true)
+  const [open, toggleOpen] = useReducer((prev) => !prev, false)
+
+  useBlocker(() => toggleOpen(), !saved)
+
   /**
    * on escape pressed it will come back to main-panel from node-edit-panel
    * this is necessary for accessibility and better ux
@@ -41,6 +46,7 @@ function EditFlow() {
   })
 
   const saveFlowHandler = (data: Pick<Flow, 'edges' | 'nodes'>) => {
+    setSaved(true)
     /**
      * storing data to the local storage as of now, can be stored anywhere
      * just have to modified the code from the `useFlow` hooks
@@ -64,6 +70,7 @@ function EditFlow() {
   return (
     <TheFlow
       flow={flow}
+      onNodeOrEdgeChange={() => setSaved(false)}
       onClick={() => {
         if (search.nodeId) {
           navigate({
@@ -80,15 +87,24 @@ function EditFlow() {
               nodes={nodes}
               onSetNodes={setNodes}
               nodeId={search.nodeId}
-              onSaveHandler={() =>
+              onSaveHandler={() => {
+                setSaved(false)
                 navigate({
                   search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }),
                   replace: true,
                 })
-              }
+              }}
             />
           ) : (
-            <NodePanel nodes={nodes} edges={edges} onSaveHandler={saveFlowHandler} />
+            <NodePanel
+              nodes={nodes}
+              edges={edges}
+              onSaveHandler={saveFlowHandler}
+              saved={saved}
+              onSaved={setSaved}
+              open={open}
+              onToggleOpen={toggleOpen}
+            />
           )}
         </TheSidebar>
       )}

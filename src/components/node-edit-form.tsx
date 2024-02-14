@@ -62,7 +62,7 @@ export function NodeEditForm({ nodes, onSetNodes, onSaveHandler, nodeId }: NodeE
           Text must be at least 3 characters.
         </p>
       )}
-      <Button className="w-full border border-border" variant="secondary" type="submit">
+      <Button className="w-full" type="submit">
         Save
       </Button>
     </form>

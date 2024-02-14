@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { createFileRoute, useBlocker, useNavigate, useSearch } from '@tanstack/react-router'
 import { z } from 'zod'
 
 import { NodeEditForm } from '@/components/node-edit-form'
@@ -9,6 +9,7 @@ import { useFlows } from '@/lib/hooks/use-flows'
 import { useKeyPress } from '@/lib/hooks/use-key-press'
 import { Flow } from '@/lib/types'
 import { nanoid } from 'nanoid'
+import { useReducer, useState } from 'react'
 
 export const Route = createFileRoute('/flow/new')({
   component: NewFlow,
@@ -27,6 +28,11 @@ function NewFlow() {
   const search = useSearch({ from: Route.fullPath })
   const [, setFlows] = useFlows()
 
+  const [saved, setSaved] = useState(true)
+  const [open, toggleOpen] = useReducer((prev) => !prev, false)
+
+  useBlocker(() => toggleOpen(), !saved)
+
   /**
    * on escape pressed it will come back to main-panel from node-edit-panel
    * this is necessary for accessibility and better ux
@@ -37,8 +43,12 @@ function NewFlow() {
     }
   })
 
-  const saveFlowHandler = (flow: Pick<Flow, 'edges' | 'nodes'>) => {
-    console.log(flow)
+  const saveFlowHandler = ({
+    nodes,
+    edges,
+    justSaving,
+  }: Pick<Flow, 'edges' | 'nodes'> & { justSaving?: boolean }) => {
+    setSaved(true)
     /**
      * storing data to the local storage as of now, can be stored anywhere
      * just have to modified the code from the `useFlow` hooks
@@ -46,8 +56,8 @@ function NewFlow() {
     const newFlow = {
       id: nanoid(),
       name: search.name ?? 'New Flow',
-      nodes: flow.nodes,
-      edges: flow?.edges,
+      nodes: nodes,
+      edges: edges,
     }
 
     setFlows((prev) => {
@@ -59,11 +69,13 @@ function NewFlow() {
      * instead navigating to the edit page so they can keep working
      * this is good practice coz letter we can implement autosave
      */
-    navigate({
-      to: '/flow/$id/edit',
-      search: { name: newFlow.name },
-      params: { id: newFlow.id },
-    })
+    if (justSaving) {
+      navigate({
+        to: '/flow/$id/edit',
+        search: { name: newFlow.name },
+        params: { id: newFlow.id },
+      })
+    }
   }
 
   /**
@@ -82,6 +94,7 @@ function NewFlow() {
   return (
     <>
       <TheFlow
+        onNodeOrEdgeChange={() => setSaved(false)}
         onClick={() => {
           if (search.nodeId) {
             navigate({ search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }), replace: true })
@@ -95,12 +108,21 @@ function NewFlow() {
                 nodes={nodes}
                 onSetNodes={setNodes}
                 nodeId={search.nodeId}
-                onSaveHandler={() =>
+                onSaveHandler={() => {
+                  setSaved(false)
                   navigate({ search: ({ nodeId, ...rest }) => ({ ...rest }), replace: true })
-                }
+                }}
               />
             ) : (
-              <NodePanel nodes={nodes} edges={edges} onSaveHandler={saveFlowHandler} />
+              <NodePanel
+                nodes={nodes}
+                edges={edges}
+                onSaveHandler={saveFlowHandler}
+                saved={saved}
+                onSaved={setSaved}
+                open={open}
+                onToggleOpen={toggleOpen}
+              />
             )}
           </TheSidebar>
         )}

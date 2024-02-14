@@ -38,11 +38,13 @@ export const TheFlow = memo(function TheFlow({
   children,
   className,
   onClick,
+  onNodeOrEdgeChange,
 }: {
   flow?: Flow
   children?: (props: ChildrenProps) => React.ReactNode
   className?: ClassValue[]
   onClick: () => void
+  onNodeOrEdgeChange: () => void
 }) {
   const initialNodes = [
     {
@@ -128,6 +130,7 @@ export const TheFlow = memo(function TheFlow({
         },
       }
       setNodes((nds) => nds.concat(newNode))
+      onNodeOrEdgeChange()
     },
     [reactFlowInstance, setNodes]
   )
@@ -152,6 +155,7 @@ export const TheFlow = memo(function TheFlow({
         }
 
         setToAndFromForNode({ source, target })
+        onNodeOrEdgeChange()
         return addEdge(edge, eds)
       })
     },
@@ -161,6 +165,7 @@ export const TheFlow = memo(function TheFlow({
   const edgeDeleteHandler = useCallback(
     (edges: Edge[]) => {
       edges.map(({ source, target }) => setToAndFromForNode({ source, target, type: 'delete' }))
+      onNodeOrEdgeChange()
     },
     [setToAndFromForNode]
   )
@@ -175,6 +180,7 @@ export const TheFlow = memo(function TheFlow({
       setEdges((els) => updateEdge(oldEdge, newConnection, els))
       setToAndFromForNode({ source: oldEdge.source, target: oldEdge.target, type: 'delete' })
       setToAndFromForNode({ source: newConnection.source, target: newConnection.target })
+      onNodeOrEdgeChange()
     },
     [setToAndFromForNode, setEdges]
   )
@@ -205,6 +211,7 @@ export const TheFlow = memo(function TheFlow({
           nodes={nodes}
           edges={edges}
           onClick={onClick}
+          onNodeDragStop={onNodeOrEdgeChange}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={editNodeHandler}
