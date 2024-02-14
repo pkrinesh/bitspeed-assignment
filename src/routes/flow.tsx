@@ -23,16 +23,6 @@ function Index() {
 }
 
 /**
- * [x] - index, new, :flow-id?edit
- * [ ] - Main page for all flows and add a create button to create new flow
- * [ ] - Create a base node - api inspired by radix
- * [x] - Sidebar - extensible for different typeof node
- * [x] - Sidebar - for action or anything with autofocus when clicked on edit button.
- * [ ] - Store state into query params.
- * [ ] - Better design
- * [ ] - Error handling
- * [x] - on ESC remove editNode
- *
  * 1. **Text Node**
  *  [x] - 1. Our flow builder currently supports only one type of message (i.e Text Message).
  *  [x] - 2. There can be multiple Text Nodes in one flow.
