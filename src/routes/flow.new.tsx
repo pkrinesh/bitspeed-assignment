@@ -1,4 +1,4 @@
-import { createFileRoute, useBlocker, useNavigate, useSearch } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { z } from 'zod'
 
 import { NodeEditForm } from '@/components/node-edit-form'
@@ -31,15 +31,13 @@ function NewFlow() {
   const [saved, setSaved] = useState(true)
   const [open, toggleOpen] = useReducer((prev) => !prev, false)
 
-  useBlocker(() => toggleOpen(), !saved)
-
   /**
    * on escape pressed it will come back to main-panel from node-edit-panel
    * this is necessary for accessibility and better ux
    */
   useKeyPress('Escape', () => {
     if (search.nodeId) {
-      navigate({ search: ({ nodeId, ...rest }) => ({ ...rest }), replace: true })
+      navigate({ search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }), replace: true })
     }
   })
 
@@ -48,7 +46,6 @@ function NewFlow() {
     edges,
     justSaving,
   }: Pick<Flow, 'edges' | 'nodes'> & { justSaving?: boolean }) => {
-    setSaved(true)
     /**
      * storing data to the local storage as of now, can be stored anywhere
      * just have to modified the code from the `useFlow` hooks
@@ -97,7 +94,10 @@ function NewFlow() {
         onNodeOrEdgeChange={() => setSaved(false)}
         onClick={() => {
           if (search.nodeId) {
-            navigate({ search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }), replace: true })
+            navigate({
+              search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }),
+              replace: true,
+            })
           }
         }}
       >
@@ -109,8 +109,11 @@ function NewFlow() {
                 onSetNodes={setNodes}
                 nodeId={search.nodeId}
                 onSaveHandler={() => {
+                  navigate({
+                    search: ({ nodeId, nodeValue, ...rest }) => ({ ...rest }),
+                    replace: true,
+                  })
                   setSaved(false)
-                  navigate({ search: ({ nodeId, ...rest }) => ({ ...rest }), replace: true })
                 }}
               />
             ) : (

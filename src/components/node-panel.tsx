@@ -82,6 +82,7 @@ export function NodePanel({
             className="w-full"
             variant="outline"
             onClick={() => {
+              if (!saved) return onToggleOpen()
               navigate({ to: '/', replace: true })
             }}
           >
