@@ -23,6 +23,13 @@ export const Route = createFileRoute('/flow/new')({
       .parse(search),
 })
 
+/*
+ * Here this `NewFlow` and `EditFlow` are the similar component and there are duplications
+ * which is deliberated because of maintainability and also better typescript support
+ * for cases like this code duplication helps in the letter stage.
+ *
+ * Even if we create a common component we still have to maintain the state and events separably
+ */
 function NewFlow() {
   const navigate = useNavigate({ from: Route.fullPath })
   const search = useSearch({ from: Route.fullPath })
